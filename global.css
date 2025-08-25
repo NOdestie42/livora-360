@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS Custom Properties for Color Scheme */
+:root {
+  /* Primary Brand Colors */
+  --color-primary: #0582CA;
+  --color-primary-hover: #0467B2;
+
+  /* Text Colors */
+  --color-text-primary: #333333;
+  --color-text-secondary: #666666;
+  --color-text-muted: #999999;
+  --color-text-inverted: #FFFFFF;
+
+  /* Button Colors */
+  --color-button-primary: #1E90FF;
+  --color-button-secondary: #00B8A9;
+  --color-button-secondary-hover: #00998F;
+
+  /* Background Colors */
+  --color-bg-main: #FFFFFF;
+  --color-bg-section: #F9F9F9;
+  --color-bg-card: #FFFFFF;
+  --color-bg-footer: #04619A;
+
+  /* UI Colors */
+  --color-border: #E0E0E0;
+  --color-focus-outline: #0582CA;
+  --color-highlight: #0582CA;
+
+  /* Status Colors */
+  --color-success: #00B894;
+  --color-error: #E74C3C;
+  --color-info: #3498DB;
+}
+
+/* Performance Optimizations */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optimize image rendering */
+img {
+  image-rendering: optimizeQuality;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* Optimize scrolling performance */
+.scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overflow-scrolling: touch;
+}
+
