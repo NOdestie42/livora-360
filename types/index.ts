@@ -315,3 +315,29 @@ export interface AddLocationData {
   files: FileItem[];
   maxpersons: number;
 }
+interface fileProps {
+  url: string,
+  type: string
+}
+interface RecieveMessageProps {
+  message: string;
+  file: fileProps[] | null
+}
+export interface ProperChattypes {
+  createdAt: Date,
+  message: RecieveMessageProps,
+  receiverId: UserData,
+  senderId: UserData,
+  updatedAt: Date,
+}
+
+
+export interface AllMessagesAPITypes {
+  _id: string,
+  createdAt: Date,
+  messages: ProperChattypes[],
+  participants: UserData[],
+  propertyId: string,
+  updatedAt: Date,
+  starred: string[] | null
+}
