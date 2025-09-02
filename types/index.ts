@@ -250,19 +250,29 @@ export interface NotificationSchemaPropsTypes {
   type: string;
 }
 
-interface SendMessageProps {
+export interface SendMessageProps {
   message: string;
-  file: File | null;
-  mediaFile?: File[] | null;
+  file?: {
+    uri: string;
+    type: string;
+    name: string;
+  } | null;
+  mediaFile?: string[] | null;
 }
 
 export interface MessageSchemaPropsTypes {
-  _id?: string;
-  senderId: string;
-  receiverId: string;
-  message: SendMessageProps;
-  propertyId: string;
-  conversationId?: string | null;
+  senderId?: string | null;
+  receiverId?: string;
+  propertyId?: string;
+  message: {
+    message?: string;
+    file?: {
+      uri: string;
+      type: string;
+      name: string;
+    } | null;
+    mediaFile?: string[] | null; // Array of URI strings
+  };
 }
 
 export interface ReservedPropertiesDate {
@@ -340,4 +350,11 @@ export interface AllMessagesAPITypes {
   propertyId: string,
   updatedAt: Date,
   starred: string[] | null
+}
+
+export interface ChatwithUserAlongPropertyData {
+  propertyId: LocationData
+  participants: UserData[]
+  starred: string[]
+  messages: ProperChattypes[]
 }

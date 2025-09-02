@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   Animated,
+  ActivityIndicator,
 } from "react-native";
 import BackArrow from "../../assets/backArrow.svg";
 import AmericanFlag from "../../assets/americanflag.svg";
@@ -20,12 +21,19 @@ const LanguageComp = () => {
   const router = useRouter();
   const { t, i18n } = useTranslation();
   const [checked, setChecked] = useState<string>("en");
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = async (value: string, label: string) => {
-    setChecked(value);
-    await AsyncStorage.setItem(LANGUAGE_KEY, value);
-    i18n.changeLanguage(value);
+  const handleChange = async (value: string) => {
+    if (value === checked) return;
+    setLoading(true);
 
+    try {
+      setChecked(value);
+      await AsyncStorage.setItem(LANGUAGE_KEY, value);
+      await i18n.changeLanguage(value); // wait for language switch
+    } finally {
+      setLoading(false); // hide loader no matter success/fail
+    }
   };
 
   const CustomRadioButton = ({ value }: { value: string }) => {
@@ -68,7 +76,8 @@ const LanguageComp = () => {
     icon: React.ReactNode;
   }) => (
     <TouchableOpacity
-      onPress={() => handleChange(value, label)}
+      disabled={loading} // prevent spam clicks while loading
+      onPress={() => handleChange(value)}
       style={{
         flexDirection: "row",
         alignItems: "center",
@@ -78,6 +87,7 @@ const LanguageComp = () => {
         borderRadius: 12,
         backgroundColor: checked === value ? "#E6F3FF" : "#FAFAFA",
         marginBottom: 12,
+        opacity: loading && checked !== value ? 0.6 : 1, // slight feedback
       }}
       activeOpacity={0.8}
     >
@@ -125,6 +135,27 @@ const LanguageComp = () => {
           }
         />
       </View>
+
+      {/* Full-screen overlay loader */}
+      {loading && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "#fff",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <ActivityIndicator size="large" color="#0582CA" />
+          <Text style={{ marginTop: 10, color: "#111", fontSize: 16 }}>
+            {t("SwitchingLanguage...")}
+          </Text>
+        </View>
+      )}
     </View>
   );
 };

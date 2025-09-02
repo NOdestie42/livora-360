@@ -9,31 +9,32 @@ import {
   Pressable,
   TouchableOpacity,
   Image,
-  Alert,
-  Animated,
+  ActivityIndicator,
 } from "react-native";
 import { useCurrency } from "@/utils/CurrencyContext";
+import { useTranslation } from "react-i18next";
 
 const CurrencyComp = () => {
   const router = useRouter();
+  const { t } = useTranslation()
   const { currency, setCurrencyToEuro, setCurrencyToUSD } = useCurrency();
-
   const [checked, setChecked] = useState(currency);
-  const [scaleAnim] = useState(new Animated.Value(0)); // for tick animation
+  const [loading, setLoading] = useState(false);
 
-  const handleSelect = (value: "USD" | "EUR") => {
-    if (value === checked) return; // no reselect
+  const handleSelect = async (value: "USD" | "EUR") => {
+    if (value === checked) return;
+    setLoading(true);
 
-    setChecked(value);
-    if (value === "USD") setCurrencyToUSD();
-    if (value === "EUR") setCurrencyToEuro();
-
-    // tick icon animation
-    scaleAnim.setValue(0);
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      useNativeDriver: true,
-    }).start();
+    try {
+      setChecked(value);
+      if (value === "USD") await setCurrencyToUSD();
+      if (value === "EUR") await setCurrencyToEuro();
+      setTimeout(() => {
+        setLoading(false);
+      }, 600);
+    } catch (e) {
+      setLoading(false);
+    }
   };
 
   const CurrencyRow = ({
@@ -53,21 +54,23 @@ const CurrencyComp = () => {
         activeOpacity={0.8}
         style={{
           flexDirection: "row",
-          justifyContent: "space-between",
           alignItems: "center",
-          paddingVertical: 16,
-          paddingHorizontal: 14,
-          borderRadius: 6,
+          justifyContent: "space-between",
+          paddingVertical: 14,
+          paddingHorizontal: 12,
+          borderRadius: 12,
+          backgroundColor: checked === value ? "#E6F3FF" : "#FAFAFA",
           marginBottom: 12,
-          backgroundColor: isActive ? "#E6F2FB" : "#F9F9F9",
+          opacity: loading && checked !== value ? 0.6 : 1, // slight feedback
         }}
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           {icon}
           <Text
             style={{
-              fontWeight: "bold",
-              color: isActive ? "#0582CA" : "#333",
+              fontSize: 16,
+              fontWeight: "600",
+              color: checked === value ? "#0582CA" : "#222",
             }}
           >
             {label}
@@ -86,13 +89,7 @@ const CurrencyComp = () => {
           }}
         >
           {isActive && (
-            <Animated.View
-              style={{
-                transform: [{ scale: scaleAnim }],
-              }}
-            >
-              <TickIcon width={14} height={14} />
-            </Animated.View>
+            <TickIcon width={14} height={14} />
           )}
         </View>
       </TouchableOpacity>
@@ -133,6 +130,27 @@ const CurrencyComp = () => {
           }
         />
       </View>
+
+      {/* Loading overlay */}
+      {loading && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "#fff",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <ActivityIndicator size="large" color="#0582CA" />
+          <Text style={{ marginTop: 10, color: "#111", fontSize: 16 }}>
+            {t("SwitchingLanguage...")}
+          </Text>
+        </View>
+      )}
     </View>
   );
 };

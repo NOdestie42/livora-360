@@ -17,7 +17,6 @@ import getCityName from '@/utils/getLocationViaLatLng';
 import { useMutation } from '@tanstack/react-query';
 import { AddLocationData, FileItem } from '@/types';
 import { addLocation } from './request';
-import Toast from 'react-native-toast-message';
 import { useUserContext } from '@/utils/UserAiBookingContext';
 import { useTranslation } from 'react-i18next';
 
@@ -112,7 +111,7 @@ const CreateProperties = () => {
             const newFiles: FileItem[] = result.assets.map((asset) => ({
                 uri: asset.uri,
                 name: asset.fileName ?? 'image.jpg',
-                type: asset.type ?? 'image/jpeg',
+                type: asset.type ?? 'image/jpeg'
             }));
 
 

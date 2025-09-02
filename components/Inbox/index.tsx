@@ -1,5 +1,5 @@
 import { View, Text, Pressable, TextInput, TouchableOpacity } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import BackArrow from "../../assets/backArrow.svg";
 import { useRouter } from "expo-router";
 import { Image } from "react-native";
@@ -13,36 +13,27 @@ import { getItemFromAsyncStorage } from "@/AsyncStorage";
 const InboxComop = () => {
   const router = useRouter();
   const { t } = useTranslation()
-  const [storeId, setStoreId] = useState<string | null>(null)
 
+  const [storeId, setStoreId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
-    const fetchStoreId = async () => {
-      const id = await getItemFromAsyncStorage('userId')
-      setStoreId(id)
-    }
-    fetchStoreId()
-  }, [])
+    (async () => {
+      const id = await getItemFromAsyncStorage("userId");
+      setStoreId(id);
+    })();
+  }, []);
 
 
   const { isLoading, isError, data, error } = useQuery({
     queryKey: ["all-messages"],
     queryFn: AllMessages,
+    enabled: !!storeId,
   });
 
 
-  if (isLoading) {
-    return <Spinner />
-  }
-
-  if (isError) {
-    <Error error={error} />
-  }
-
-  console.log('====================================');
-  console.log(data);
-  console.log('====================================');
-
+  if (isLoading) return <Spinner />;
+  if (isError) return <Error error={error} />;
 
   const timeDifference = (date: string | Date) => {
     const currentTime = new Date();
@@ -96,7 +87,7 @@ const InboxComop = () => {
                       key={pIndex}
                       className="flex flex-row items-center justify-between py-3"
                       onPress={() => {
-                        router.push(`/chat/${participant._id}`)
+                        router.push(`/chat/${item._id}`)
                       }}
                     >
                       <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
