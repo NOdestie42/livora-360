@@ -452,8 +452,9 @@ const ChatComp = ({ id }: { id: string | string[] }) => {
                                         <Text className="text-white text-xs">X</Text>
                                     </Pressable>
                                 </View>
-                            ),
-
+                            )
+                        ))}
+                        {files.map((file, index) => (
                             file.type.includes('video') && (
                                 <View key={index} className="relative mr-2">
                                     <View className="w-16 h-16 rounded-md items-center justify-center">

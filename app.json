@@ -17,10 +17,10 @@
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.haseeb_1.myapp",
+      "package": "com.haseeb-1.myapp",
       "permissions": [
         "android.permission.RECORD_AUDIO",
-        "INTERNET"
+        "android.permission.INTERNET"
       ]
     },
     "web": {
@@ -55,7 +55,8 @@
       "expo-font",
       "expo-video",
       "expo-localization",
-      "expo-secure-store"
+      "expo-secure-store",
+      "@react-native-google-signin/google-signin"
     ],
     "include": [
       "declarations.d.ts"

@@ -358,3 +358,11 @@ export interface ChatwithUserAlongPropertyData {
   starred: string[]
   messages: ProperChattypes[]
 }
+
+export interface Prop {
+  avgRating: string;
+  property: LocationData;
+  totalReviews: number;
+  reviews: RecievingReviewSchemaPropsType[];
+  createdAt: Date;
+}

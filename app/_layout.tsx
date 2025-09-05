@@ -15,7 +15,7 @@ import { I18nextProvider } from "react-i18next";
 import UserAiBookingContextProvider from "@/utils/UserAiBookingContext";
 import i18n from "@/i18n";
 import { CurrencyProvider } from "@/utils/CurrencyContext";
-
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 export default function RootLayout() {
   const queryClient = new QueryClient({
@@ -33,6 +33,16 @@ export default function RootLayout() {
       },
     },
   });
+
+
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: "715134125945-t2a026p2bc67jn2pc5pjvg8qq9n6fug6.apps.googleusercontent.com",
+      iosClientId: "715134125945-lpc5ncghsqaqp6ct7jlk56c0sv5q4j4g.apps.googleusercontent.com",
+      offlineAccess: true,
+      forceCodeForRefreshToken: true,
+    });
+  }, [])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -71,7 +81,7 @@ export default function RootLayout() {
                 </CurrencyProvider>
               </SafeAreaProvider>
             </GestureHandlerRootView>
-          </StripeProvider> 
+          </StripeProvider>
         </UserAiBookingContextProvider>
       </I18nextProvider>
     </QueryClientProvider>

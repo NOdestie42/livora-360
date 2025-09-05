@@ -16,6 +16,7 @@ import loginUser from "./request";
 import { AxiosError } from "axios";
 import { setItemToAsyncStorage } from "@/AsyncStorage";
 import { useRouter } from "expo-router";
+import { GoogleSignin, isErrorWithCode, isSuccessResponse, statusCodes } from "@react-native-google-signin/google-signin";
 
 type ErrorResponse = {
   message: string;
@@ -42,6 +43,36 @@ const SignupLoginForm = () => {
     }
     setError("");
   };
+
+  const handleGoogleLogin = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      if (isSuccessResponse(response)) {
+        console.log('====================================');
+        console.log(response);
+        console.log('====================================');
+      } else {
+        console.log('====================================');
+        console.log('Google Cancel');
+        console.log('====================================');
+      }
+
+    } catch (error) {
+      if (isErrorWithCode(error)) {
+        switch (error.code) {
+          case statusCodes.IN_PROGRESS:
+            console.log('in progress');
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+            console.log('service no available');
+          default:
+            console.error("Google Signin Error Cause:", error.cause);
+            console.error("Google Signin Error:", error.code);
+        }
+      }
+      console.error("Google Signin Error:", error);
+    }
+  }
 
   useEffect(() => {
     if (error) {
@@ -141,7 +172,7 @@ const SignupLoginForm = () => {
           </View>
           <View className="border rounded-md border-[#E2E8F0] w-full py-[10px] px-4 flex flex-row items-center justify-between">
             <GoogleIcon />
-            <Pressable>
+            <Pressable onPress={handleGoogleLogin}>
               <Text className="text-center font-semibold text-black">
                 Continue with Google
               </Text>
