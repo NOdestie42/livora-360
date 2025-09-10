@@ -1,5 +1,5 @@
 import React from "react";
-import Plus from "../../assets/plus.svg";
+import Plus from "../../assets/Plus.svg";
 import Minus from "../../assets/minus.svg";
 import { View, Text, Pressable } from "react-native";
 import { LocationData } from "@/types";

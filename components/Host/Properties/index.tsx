@@ -1,4 +1,4 @@
-import { View, Text, Image, Pressable, TouchableOpacity, Animated } from 'react-native'
+import { View, Text, Image, Pressable, TouchableOpacity, Animated, ScrollView } from 'react-native'
 import React, { useCallback, useRef, useState } from 'react'
 import { useRouter } from 'expo-router';
 import { useQueries } from '@tanstack/react-query';
@@ -181,26 +181,43 @@ const HostPropertiesComp = () => {
                         <RoundedBell width={40} height={40} />
                     </Pressable>
                 </View>
-
-                {/* Properties */}
-                <Text className="text-2xl font-semibold mb-1 mt-4">{t("MyProperties")}</Text>
-                {properties?.length > 0
-                    ? properties.map((item: any, i: number) => <PropertyCard formatPrice={formatPrice} key={i} item={item} onThreeDotPress={openPropertySheet} />)
-                    : <EmptyProperties />}
             </View>
 
+            {/* Properties Scrollable List */}
+            <ScrollView
+                contentContainerStyle={{ paddingBottom: 120 }} // extra bottom space for buttons
+                showsVerticalScrollIndicator={false}
+                className="w-[90%] mx-auto"
+            >
+                <Text className="text-2xl font-semibold mb-1 mt-4">{t("MyProperties")}</Text>
+                {properties?.length > 0
+                    ? properties.map((item: any, i: number) => (
+                        <PropertyCard
+                            formatPrice={formatPrice}
+                            key={i}
+                            item={item}
+                            onThreeDotPress={openPropertySheet}
+                        />
+                    ))
+                    : <EmptyProperties />}
+            </ScrollView>
+
             {/* Bottom buttons */}
-            <View className="absolute bottom-6 p-5 w-full flex-row justify-between items-center">
+            <View className="absolute bottom-2 pl-5 w-full flex-row justify-between items-center">
                 <View />
                 <Pressable onPress={() => router.push('/host/addproperty')}>
-                    <TouchableOpacity activeOpacity={1} onLongPress={() => { handlePressIn(); setIsAiSheetOpen(true); aiBottomSheetRef.current?.snapToIndex(1); }} onPressOut={handlePressOut}>
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        onLongPress={() => { handlePressIn(); setIsAiSheetOpen(true); aiBottomSheetRef.current?.snapToIndex(1); }}
+                        onPressOut={handlePressOut}
+                    >
                         <Animated.View style={{ transform: [{ scale: scaleValue }], width: 56, height: 56 }}>
                             <Image source={require("../../../assets/images/ai.png")} style={{ width: "100%", height: "100%" }} />
                         </Animated.View>
                     </TouchableOpacity>
                 </Pressable>
                 <Pressable onPress={() => router.push('/host/addproperty')}>
-                    <View className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+                    <View className="w-12 h-12 mr-6 bg-primary rounded-full flex items-center justify-center">
                         <RoundedPlus width={28} height={28} />
                     </View>
                 </Pressable>
@@ -228,8 +245,6 @@ const HostPropertiesComp = () => {
                 innerRef={propertyBottomSheetRef}
                 isOpen={isPropertySheetOpen}
                 onClose={() => { setIsPropertySheetOpen(false); setSelectedPropertyId(null); }}
-                // enableHandlePanningGesture
-
                 snapPoints={["1%", "30%"]}
                 onChange={(i: number) => i === 0 && setIsPropertySheetOpen(false)}
             >

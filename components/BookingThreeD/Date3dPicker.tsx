@@ -1,5 +1,5 @@
-import { View, Text, Pressable } from "react-native";
-import React, { Dispatch, SetStateAction, useState } from "react";
+import { View, Text, Pressable, ActivityIndicator } from "react-native";
+import React, { useState } from "react";
 import moment, { Moment } from "moment";
 import { useQuery } from "@tanstack/react-query";
 import { checkingpropertiesdates } from "./request";
@@ -21,6 +21,8 @@ const Date3dPicker = ({
   startDate,
 }: Date3dPickerProps) => {
   const [viewDate, setViewDate] = useState(moment());
+  const [selecting, setSelecting] = useState(false); 
+
   const startOfMonth = viewDate.clone().startOf("month");
   const endOfMonth = viewDate.clone().endOf("month");
   const days = Array.from({ length: endOfMonth.date() }, (_, i) =>
@@ -30,26 +32,30 @@ const Date3dPicker = ({
   const {
     isPending: reserveDatePending,
     isError: reserveDateisError,
-    data: reserveDateData,
+    data: reserveDateData = [],
     error: reserveDateError,
   } = useQuery({
     queryKey: ["checking-properties-dates", propertyId],
     queryFn: () => checkingpropertiesdates(propertyId),
+    staleTime: 0,           
+    refetchOnMount: "always",  
   });
 
+  const normalizeDate = (date: string | Date) => moment(date).startOf("day");
+
   const isReservedDate = (day: Moment) => {
-    if (!reserveDateData) return false;
-    return reserveDateData.some((range: ReservedPropertiesDate) =>
-      day.isBetween(moment(range.startDate), moment(range.endDate), "day", "[]")
-    );
+    return reserveDateData.some((range: ReservedPropertiesDate) => {
+      const reservedStart = normalizeDate(range.startDate);
+      const reservedEnd = moment(range.endDate).endOf("day");
+      return day.isBetween(reservedStart, reservedEnd, "day", "[]");
+    });
   };
 
   const isRangeValid = (start: Moment, end: Moment) => {
-    if (!reserveDateData) return true;
     const rangeStart = start.clone().startOf("day");
     const rangeEnd = end.clone().endOf("day");
     return !reserveDateData.some((reservedRange: ReservedPropertiesDate) => {
-      const reservedStart = moment(reservedRange.startDate).startOf("day");
+      const reservedStart = normalizeDate(reservedRange.startDate);
       const reservedEnd = moment(reservedRange.endDate).endOf("day");
       return (
         rangeStart.isSameOrBefore(reservedEnd) &&
@@ -60,26 +66,30 @@ const Date3dPicker = ({
 
   const handleDayClick = (day: Moment) => {
     const today = moment().startOf("day");
-
-    if (day.isBefore(today)) {
-      return; // Ignore clicks on past dates
+    if (day.isBefore(today) || isReservedDate(day)) {
+      return;
     }
 
-    if (!startDate || (startDate && endDate)) {
-      onDatesChange(day.clone(), null);
-    } else if (startDate && !endDate) {
-      if (day.isAfter(startDate) && isRangeValid(startDate, day)) {
-        onDatesChange(startDate.clone(), day.clone());
-      } else {
-        Toast.show({
-          type: "error",
-          text1:
-            "Selected range includes reserved dates. Please select a different range.",
-        });
+    setSelecting(true); 
 
-        onDatesChange(null, null);
+    setTimeout(() => {
+      if (!startDate || (startDate && endDate)) {
+        onDatesChange(day.clone(), null);
+      } else if (startDate && !endDate) {
+        if (day.isAfter(startDate) && isRangeValid(startDate, day)) {
+          onDatesChange(startDate.clone(), day.clone());
+        } else {
+          Toast.show({
+            type: "error",
+            text1:
+              "Selected range includes reserved dates. Please select a different range.",
+          });
+          onDatesChange(null, null);
+        }
       }
-    }
+
+      setSelecting(false); 
+    }, 0); 
   };
 
   const renderDay = (day: Moment) => {
@@ -92,19 +102,17 @@ const Date3dPicker = ({
 
     return (
       <Pressable
+        key={day.toString()}
         onPress={() => handleDayClick(day)}
-        className={`w-12 h-12 items-center justify-center ${
-          isSelectedStart || isSelectedEnd
-            ? "bg-orange-500 text-white rounded-full"
-            : ""
-        } ${isInRange ? "bg-gray-200 rounded-full" : ""} ${
-          isPast || isReserved ? "text-gray-400" : ""
-        }`}
+        className={`w-12 h-12 items-center justify-center rounded-full
+          ${isSelectedStart || isSelectedEnd ? "bg-orange-500" : ""}
+          ${isInRange ? "bg-gray-200" : ""}
+          ${isPast || isReserved ? "bg-gray-100" : ""}`}
         disabled={isPast || isReserved}
       >
         <Text
-          className={` ${
-            isSelectedStart || isSelectedEnd ? "text-white rounded-full" : ""
+          className={`${
+            isSelectedStart || isSelectedEnd ? "text-white" : "text-black"
           } ${isPast || isReserved ? "text-gray-400" : ""}`}
         >
           {day.date()}
@@ -115,22 +123,15 @@ const Date3dPicker = ({
 
   const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  const DayCell = ({ day }: { day: string }) => (
-    <View className="text-center font-bold">
-      <Text className="text-sm text-[#333333]">{day}</Text>
-    </View>
-  );
-
   return (
     <View>
+      {/* Month navigation */}
       <View className="flex flex-row items-center justify-between">
         <Pressable
           onPress={() => setViewDate(viewDate.clone().subtract(1, "M"))}
         >
           <View
-            style={{
-              transform: [{ rotate: "180deg" }],
-            }}
+            style={{ transform: [{ rotate: "180deg" }] }}
             className="m-2 p-2"
           >
             <ForwardArror width={15} height={15} />
@@ -149,22 +150,26 @@ const Date3dPicker = ({
       <View className="flex flex-row flex-wrap items-center justify-center gap-2">
         {DAYS_OF_WEEK.map((day) => (
           <View key={day} className="w-12 h-8 items-center justify-center ">
-            <DayCell day={day} />
+            <Text className="text-sm font-normal text-[#333333]">{day}</Text>
           </View>
         ))}
       </View>
 
-      <View className="flex flex-row flex-wrap items-center justify-center gap-2">
+      <View className="flex flex-row flex-wrap items-center justify-center gap-2 relative">
         {reserveDatePending && <Text>Loading...</Text>}
         {reserveDateisError && (
           <Text className="text-red-500">
-            Error: {reserveDateError.message}
+            Error: {String(reserveDateError)}
           </Text>
         )}
+        {!reserveDatePending && !reserveDateisError && days.map(renderDay)}
 
-        {!reserveDatePending &&
-          !reserveDateisError &&
-          days.map((day) => <View key={day.toString()}>{renderDay(day)}</View>)}
+        {selecting && (
+          <View className="absolute inset-0 bg-white/70 items-center justify-center rounded-lg">
+            <ActivityIndicator size="large" color="#ff6600" />
+            <Text className="mt-2 text-gray-700">Updating selection...</Text>
+          </View>
+        )}
       </View>
     </View>
   );
