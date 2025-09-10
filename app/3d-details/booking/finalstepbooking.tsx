@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, Image, Button, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  Image,
+  ActivityIndicator,
+  ScrollView,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import BackArrow from "../../../assets/backArrow.svg";
 import RatingStar from "../../../assets/yellowStar.svg";
@@ -16,10 +23,11 @@ import { DepositCardlistFucntion } from "@/components/Deposit/request";
 const FinalStepBooking = () => {
   const router = useRouter();
   const [nights, setNights] = useState<number>(0);
-  const [userId, setUserId] = useState<string | null>(null)
-  const [primaryCard, setPrimaryCard] = useState('');
-  const queryCLient = useQueryClient();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [primaryCard, setPrimaryCard] = useState("");
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
+
   const {
     bookingId,
     updatedstartDate,
@@ -32,9 +40,10 @@ const FinalStepBooking = () => {
     infants,
     pets,
     totalGuests,
+    propertyId, 
   } = useLocalSearchParams();
 
-  const { isPending, isError, data: CardData, error } = useQuery({
+  const { data: CardData } = useQuery({
     queryKey: ["Deposite-cards-list"],
     queryFn: DepositCardlistFucntion,
   });
@@ -50,23 +59,21 @@ const FinalStepBooking = () => {
 
   const parseData = data && typeof data === "string" ? JSON.parse(data) : null;
 
-
   function calculateNights(
     startDate: string | string[],
     endDate: string | string[]
   ) {
     const start = moment(startDate, "DD-MM-YYYY");
     const end = moment(endDate, "DD-MM-YYYY");
-    const nightsDiff = end.diff(start, "days");
-    return nightsDiff;
+    return end.diff(start, "days");
   }
 
   useEffect(() => {
     const getUserId = async () => {
-      const userId = await getItemFromAsyncStorage('userId')
+      const userId = await getItemFromAsyncStorage("userId");
       setUserId(userId);
-    }
-    getUserId()
+    };
+    getUserId();
   }, []);
 
   useEffect(() => {
@@ -75,33 +82,53 @@ const FinalStepBooking = () => {
   }, [updatedstartDate, updatedendDate]);
 
   const bookingmutation = useMutation({
-    mutationFn: BookingData,
-    onMutate: () => {
-      setLoading(true);
-    },
-    onSuccess: async (data) => {
-      queryCLient.setQueryData(["bookingdata"], data);
-      Toast.show({
-        type: "success",
-        text1: "Booking Successfull",
-        text2: 'Press to check your trip',
-        onPress: () => {
-          router.push('/trips')
-        },
+  mutationFn: BookingData,
+  onMutate: () => {
+    setLoading(true);
+  },
+  onSuccess: async (data) => {
+
+    if (propertyId) {
+      // Force refresh reserved dates immediately
+      await queryClient.invalidateQueries({
+        queryKey: ["checking-properties-dates", propertyId],
       });
-      setLoading(false);
-    },
-    onError: (error: Error) => {
-      console.log("Login error:", error);
-      const errorMessage =
-        (error as any)?.response?.data?.message || "An error occurred";
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: errorMessage,
+
+      // Reset the cache so next mount will always refetch
+      await queryClient.resetQueries({
+        queryKey: ["checking-properties-dates", propertyId],
       });
-    },
-  });
+    }
+
+    // Reset cached selected dates
+    queryClient.setQueryData(["selected-dates", propertyId], {
+      startDate: null,
+      endDate: null,
+    });
+
+    Toast.show({
+      type: "success",
+      text1: "Booking Successful",
+      text2: "Press to check your trip",
+      onPress: () => {
+        router.push("/trips");
+      },
+    });
+
+    setLoading(false);
+  },
+  onError: (error: Error) => {
+    console.log("Booking error:", error);
+    const errorMessage =
+      (error as any)?.response?.data?.message || "An error occurred";
+    Toast.show({
+      type: "error",
+      text1: "Error",
+      text2: errorMessage,
+    });
+    setLoading(false);
+  },
+});
 
 
   const handlePay = () => {
@@ -115,17 +142,23 @@ const FinalStepBooking = () => {
       totalPersons: parseData.maxpersons,
       hostedBy: parseData?.createdBy._id,
       bookedBy: userId,
-      startDate: updatedstartDate ? new Date(updatedstartDate as string) : new Date(startDate as string),
-      endDate: updatedendDate ? new Date(updatedendDate as string) : new Date(endDate as string),
+      startDate: moment(updatedstartDate, "DD-MM-YYYY").toDate(),
+      endDate: moment(updatedendDate, "DD-MM-YYYY").toDate(),
       property: parseData._id,
       wallet_id: primaryCard,
-      status: "Pending"
+      status: "Pending",
     };
+
+  
     bookingmutation.mutate(sendingData);
-  }
+  };
 
   return (
-    <View className="flex-1 bg-white w-full px-[5%] mx-auto">
+    <ScrollView
+      className="flex-1 bg-white w-full px-[5%] mx-auto"
+      contentContainerStyle={{ paddingBottom: 0 }}
+    >
+      {/* Header */}
       <View className="flex flex-row items-center justify-between mt-8">
         <Pressable onPress={() => router.back()}>
           <View>
@@ -135,6 +168,8 @@ const FinalStepBooking = () => {
         <Text className="text-lg font-semibold">Request to Book</Text>
         <View />
       </View>
+
+      {/* Property Info */}
       <View className="py-6 flex flex-row items-start gap-6 border-b border-[#EFEFEF]">
         <Image
           source={{ uri: parseData.files[0] }}
@@ -150,6 +185,8 @@ const FinalStepBooking = () => {
           </View>
         </View>
       </View>
+
+      {/* Trip Details */}
       <View className="py-4 border-b border-[#EFEFEF]">
         <Text className="text-[#2B2B2B] text-xl font-semibold pb-4">
           Your Trip
@@ -162,6 +199,7 @@ const FinalStepBooking = () => {
               : null}
           </Text>
         </View>
+
         <Text className="text-[#2B2B2B] text-[18px] font-bold">Guests</Text>
         <View className="pt-1 pb-4">
           <Text className="text-sm">
@@ -176,6 +214,8 @@ const FinalStepBooking = () => {
           </Text>
         </View>
       </View>
+
+      {/* Price Details */}
       <View className="py-4 border-b border-[#EFEFEF]">
         <Text className="text-[#2B2B2B] text-[18px] font-bold">
           Price Details
@@ -183,17 +223,16 @@ const FinalStepBooking = () => {
         <View className="flex flex-col gap-2 pt-2">
           <View className="flex flex-row items-center justify-between">
             <Text className="text-sm text-[#646464]">
-              ${parseData.rent} x {nights} {nights === 1 ? `night` : `nights`}
+              ${parseData.rent} x {nights} {nights === 1 ? "night" : "nights"}
             </Text>
             <Text className="text-sm text-[#646464]">
               ${parseData.rent * nights}
             </Text>
           </View>
           <View className="flex flex-row items-center justify-between">
-            <Text className="text-sm text-[#646464]">Viste Visit Fee </Text>
+            <Text className="text-sm text-[#646464]">Viste Visit Fee</Text>
             <Text className="text-sm text-[#646464]">$20</Text>
           </View>
-
           <View className="flex flex-row items-center justify-between mt-2">
             <Text className="text-sm text-[#2B2B2B] font-semibold">
               Total (USD)
@@ -204,6 +243,8 @@ const FinalStepBooking = () => {
           </View>
         </View>
       </View>
+
+      {/* Payment Method */}
       <View className="mt-2">
         <Text className="text-[#2B2B2B] text-xl font-semibold pb-4">
           Payment Method
@@ -216,12 +257,23 @@ const FinalStepBooking = () => {
           </View>
         </View>
       </View>
-      <View className="flex gap-2 mt-6">
-        <CustomButton onPress={() => router.push("/wallet")} text="Go to Wallet" />
+
+      {/* Action Buttons */}
+      <View className="flex gap-2 mt-6 mb-10">
+        <CustomButton
+          onPress={() => router.push("/wallet")}
+          text="Go to Wallet"
+        />
         <CustomButton text="Add Cards" />
-        <CustomButton disable={!primaryCard} onPress={handlePay} text={loading ? <ActivityIndicator size="small" color="#fff" /> : "Pay"} />
+        <CustomButton
+          disable={!primaryCard}
+          onPress={handlePay}
+          text={
+            loading ? <ActivityIndicator size="small" color="#fff" /> : "Pay"
+          }
+        />
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
