@@ -3,11 +3,14 @@ import React, { useEffect } from 'react'
 import { MaterialTopTabBarProps } from '@react-navigation/material-top-tabs'
 import Pictures from '../../assets/picture.svg'
 import Video from '../../assets/Video.svg'
+import Review from '../../assets/yellowStar.svg'
+
 import { useTranslation } from 'react-i18next'
 
 const allSvgs = {
     Pictures: Pictures,
     Video: Video,
+    Review: Review,
 };
 
 const MediaTopWidgt: React.FC<
@@ -49,7 +52,7 @@ const MediaTopWidgt: React.FC<
 
                 return (
                     <TouchableOpacity
-                        className="flex items-center justify-center pt-6 pb-2 w-[50%]"
+                        className="flex items-center justify-center pt-6 pb-2 w-[33.33%]"
                         key={index}
                         onPress={onPress}
                     >

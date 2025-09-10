@@ -7,6 +7,7 @@ import Video from './Video';
 import TopTabCompRenderer from '../TopBarNavigator/TopTabCompRenderer';
 import { useQuery } from '@tanstack/react-query';
 import { getSingle } from './request';
+import Review from './Review';
 
 const ThreeDTopNavigator = ({ id }: { id: string | string[] }) => {
     const Tab = createMaterialTopTabNavigator();
@@ -33,6 +34,15 @@ const ThreeDTopNavigator = ({ id }: { id: string | string[] }) => {
             <Tab.Screen name="Video">
                 {() => <TopTabCompRenderer
                     Children={Video}
+                    isLoading={isLoading}
+                    isError={isError}
+                    data={data}
+                    error={error}
+                />}
+            </Tab.Screen>
+            <Tab.Screen name="Review">
+                {() => <TopTabCompRenderer
+                    Children={(props) => <Review {...props} id={id} />}
                     isLoading={isLoading}
                     isError={isError}
                     data={data}

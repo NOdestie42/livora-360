@@ -83,5 +83,7 @@
     "Edit Profile": "Editar perfil",
     "SAVING": "AHORRO",
     "Enter Name": "Introduzca el nombre",
-    "Enter Email": "Ingrese el correo electrónico"
+    "Enter Email": "Ingrese el correo electrónico",
+    "SwitchingLanguage...": "Cambiar de idioma...",
+    "SwitchingCurrency...": "Cambio de moneda..."
 }

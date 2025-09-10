@@ -83,5 +83,7 @@
     "Edit Profile": "Edit Profile",
     "SAVING": "SAVING",
     "Enter Name": "Enter Name",
-    "Enter Email": "Enter Email"
+    "Enter Email": "Enter Email",
+    "SwitchingLanguage...": "Switching Language...",
+    "SwitchingCurrency...": "Switching Currency..."
 }

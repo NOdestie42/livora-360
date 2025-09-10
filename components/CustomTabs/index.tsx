@@ -20,7 +20,7 @@ interface CustomTabBarProps {
     isActive: boolean;
   };
   layoutClasses?: string;
-  open: React.Dispatch<React.SetStateAction<boolean>>
+  open?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const CustomTabBar = memo(({
@@ -44,7 +44,7 @@ const CustomTabBar = memo(({
       toValue: 2,
       useNativeDriver: true,
     }).start();
-    open(true)
+    open?.(true)
   };
 
   const handlePressOut = () => {
