@@ -5,7 +5,7 @@ import BackArrow from "../../assets/backArrow.svg";
 import { useRouter } from "expo-router";
 import { TextInput } from "react-native-gesture-handler";
 import InfoIcon from "../../assets/infoIcon.svg";
-import Plus from "../../assets/Plus.svg";
+import Plus from "../../assets/plus.svg";
 import EmptyCardState from "../../assets/EmptyCardState.svg";
 import ListCard from "../../assets/ListCard.svg";
 import DepositCardList from "./DepositCardList";
