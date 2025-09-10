@@ -112,6 +112,7 @@ const ProfileComp = () => {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 80 }}
           >
+
             {/* User Info */}
             <View className="mt-6">
               <View className="flex flex-row items-center justify-between pb-4 border-b border-[#D9D9D9]">
