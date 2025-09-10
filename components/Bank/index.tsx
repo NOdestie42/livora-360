@@ -4,7 +4,7 @@ import BackArrow from "../../assets/backArrow.svg";
 import { useRouter } from "expo-router";
 import EmptyCardState from "../../assets/EmptyCardState.svg";
 import ListCard from "../../assets/ListCard.svg";
-import Plus from "../../assets/Plus.svg";
+import Plus from "../../assets/plus.svg";
 import Dotsss from "../../assets/DOtsss.svg";
 import Deletes from "../../assets/deletes.svg";
 import { useQuery } from "@tanstack/react-query";
